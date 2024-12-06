@@ -87,6 +87,20 @@ class TextToSQLPipeline:
 
         return schema_indices
 
+    def _build_pipeline(self) -> QueryPipeline:
+        """Builds the query pipeline with retrieval and generation components."""
+        retrieve_component = FnComponent(
+            fn=self._retrieve_context,
+            input_keys=["query_str"],
+            output_keys=["context", "query_str"]
+        )
+        generate_component = FnComponent(
+            fn=self._generate_sql,
+            input_keys=["context", "query_str"],
+            output_keys=["sql_query"]
+        )
+        return QueryPipeline(chain=[retrieve_component, generate_component])
+
     def _retrieve_contexts(self, query_str: str, schema_names: list) -> str:
         """
         Retrieves combined context from multiple schemas.
